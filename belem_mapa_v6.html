@@ -1,0 +1,190 @@
+
+<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+  <span style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-right:8px;">Belém · mapa de conexões 2026</span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary);">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#0F6E56" stroke-width="2.5"/><polygon points="22,0 30,4 22,8" fill="#0F6E56"/></svg>Nível 5 · parceria ativa
+  </span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary);">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#F5A800" stroke-width="2"/><polygon points="22,0 30,4 22,8" fill="#F5A800"/></svg>Nível 4 · conexão pontual
+  </span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--color-text-secondary);">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#AAAAAA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="22,0 30,4 22,8" fill="#AAAAAA"/></svg>Nível 3 · parceria passada
+  </span>
+</div>
+
+<div id="wrap" style="width:100%;border:0.5px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;"></div>
+
+<p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;">Passe o mouse sobre uma organização para destacar suas conexões · nós são arrastáveis</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const NODES = [
+  {id:"CESUPA",deg:24},{id:"Açaí Valley",deg:22},{id:"FIEPA",deg:18},
+  {id:"Manioca",deg:17},{id:"Vale S.A.",deg:16},{id:"FAPESPA",deg:15},
+  {id:"Sicoob Coimppa",deg:14},{id:"UFPA",deg:12},{id:"ViaFloresta",deg:12},
+  {id:"SEBRAE/PA",deg:11},{id:"Icamiaba",deg:11},{id:"Cacauaré Amaz.",deg:10},
+  {id:"Fundação Guamá",deg:10},{id:"Boaventura Lab",deg:8},
+  {id:"Amazon People",deg:5},{id:"Amazônia Vox",deg:5},{id:"Casa Sete",deg:4},
+];
+
+const EDGES = [
+  ["Icamiaba","Fundação Guamá",3],["Icamiaba","UFPA",5],["Icamiaba","SEBRAE/PA",5],
+  ["Icamiaba","Casa Sete",3],["Icamiaba","Manioca",3],["Icamiaba","FAPESPA",3],
+  ["Icamiaba","Boaventura Lab",5],
+  ["CESUPA","Amazon People",5],["CESUPA","Fundação Guamá",4],["CESUPA","FIEPA",5],
+  ["CESUPA","Vale S.A.",5],["CESUPA","UFPA",5],["CESUPA","SEBRAE/PA",3],
+  ["CESUPA","Casa Sete",3],["CESUPA","Manioca",4],["CESUPA","ViaFloresta",3],
+  ["CESUPA","Açaí Valley",5],["CESUPA","FAPESPA",5],["CESUPA","Cacauaré Amaz.",4],
+  ["CESUPA","Icamiaba",3],["CESUPA","Amazônia Vox",3],
+  ["FAPESPA","Fundação Guamá",5],["FAPESPA","Vale S.A.",3],["FAPESPA","UFPA",5],
+  ["FAPESPA","SEBRAE/PA",3],["FAPESPA","Manioca",5],["FAPESPA","Açaí Valley",4],
+  ["FAPESPA","CESUPA",5],["FAPESPA","Cacauaré Amaz.",5],
+  ["Açaí Valley","Fundação Guamá",5],["Açaí Valley","FIEPA",5],["Açaí Valley","Vale S.A.",4],
+  ["Açaí Valley","UFPA",5],["Açaí Valley","SEBRAE/PA",5],["Açaí Valley","Sicoob Coimppa",3],
+  ["Açaí Valley","Manioca",3],["Açaí Valley","ViaFloresta",4],["Açaí Valley","FAPESPA",5],
+  ["Açaí Valley","CESUPA",5],["Açaí Valley","Cacauaré Amaz.",5],["Açaí Valley","Icamiaba",3],
+  ["Açaí Valley","Boaventura Lab",5],["Açaí Valley","Amazônia Vox",3],
+  ["Sicoob Coimppa","Amazon People",4],["Sicoob Coimppa","Fundação Guamá",5],
+  ["Sicoob Coimppa","FIEPA",4],["Sicoob Coimppa","Vale S.A.",4],["Sicoob Coimppa","UFPA",5],
+  ["Sicoob Coimppa","SEBRAE/PA",4],["Sicoob Coimppa","Casa Sete",5],["Sicoob Coimppa","ViaFloresta",4],
+  ["Sicoob Coimppa","Açaí Valley",4],["Sicoob Coimppa","FAPESPA",4],["Sicoob Coimppa","CESUPA",4],
+  ["Sicoob Coimppa","Cacauaré Amaz.",4],
+  ["ViaFloresta","Fundação Guamá",3],["ViaFloresta","FIEPA",4],["ViaFloresta","Vale S.A.",3],
+  ["ViaFloresta","UFPA",3],["ViaFloresta","SEBRAE/PA",3],["ViaFloresta","Casa Sete",3],
+  ["ViaFloresta","Açaí Valley",3],["ViaFloresta","CESUPA",3],["ViaFloresta","Amazônia Vox",4],
+  ["Boaventura Lab","Fundação Guamá",4],["Boaventura Lab","FIEPA",4],["Boaventura Lab","SEBRAE/PA",3],
+  ["Boaventura Lab","CESUPA",3],["Boaventura Lab","Icamiaba",5],
+  ["Cacauaré Amaz.","Amazon People",5],["Cacauaré Amaz.","Fundação Guamá",5],
+  ["Cacauaré Amaz.","SEBRAE/PA",4],["Cacauaré Amaz.","Açaí Valley",5],
+  ["UFPA","Vale S.A.",4],["UFPA","Açaí Valley",4],["UFPA","CESUPA",3],
+  ["Manioca","Fundação Guamá",3],["Manioca","FIEPA",4],["Manioca","Vale S.A.",3],
+  ["Manioca","UFPA",5],["Manioca","SEBRAE/PA",3],["Manioca","FAPESPA",4],
+  ["Manioca","CESUPA",5],["Manioca","Cacauaré Amaz.",4],["Manioca","Icamiaba",3],
+  ["Manioca","Boaventura Lab",3],["Manioca","Amazônia Vox",3],
+  ["FIEPA","Amazon People",4],["FIEPA","Fundação Guamá",4],["FIEPA","Vale S.A.",5],
+  ["FIEPA","UFPA",5],["FIEPA","SEBRAE/PA",5],["FIEPA","Sicoob Coimppa",4],
+  ["FIEPA","Manioca",4],["FIEPA","Açaí Valley",4],["FIEPA","FAPESPA",4],
+  ["FIEPA","CESUPA",5],["FIEPA","Amazônia Vox",4],
+  ["Vale S.A.","Amazon People",4],["Vale S.A.","FIEPA",4],["Vale S.A.","UFPA",5],
+  ["Vale S.A.","SEBRAE/PA",4],["Vale S.A.","Manioca",5],["Vale S.A.","Açaí Valley",4],
+  ["Vale S.A.","FAPESPA",4],["Vale S.A.","CESUPA",5],
+].map(([s,t,l]) => ({source:s, target:t, level:l}));
+
+const wrap = document.getElementById('wrap');
+const W = wrap.offsetWidth || 660;
+const H = Math.round(W * 0.74);
+wrap.style.height = H + 'px';
+
+const svg = d3.select('#wrap').append('svg').attr('width',W).attr('height',H);
+const defs = svg.append('defs');
+const edgeColor = lv => lv===5 ? '#0F6E56' : lv===4 ? '#F5A800' : '#BBBBBB';
+
+[5,4,3].forEach(lv => {
+  defs.append('marker').attr('id','arr'+lv)
+    .attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5Z').attr('fill',edgeColor(lv));
+});
+
+const r = d3.scaleSqrt().domain([2,24]).range([9,27]);
+
+const sim = d3.forceSimulation(NODES)
+  .force('link', d3.forceLink(EDGES).id(d=>d.id)
+    .distance(d => 100-((d.source.deg||8)+(d.target.deg||8))*1.2)
+    .strength(0.25))
+  .force('charge', d3.forceManyBody().strength(d => -160-d.deg*9))
+  .force('center', d3.forceCenter(W/2, H/2))
+  .force('collide', d3.forceCollide(d => r(d.deg)+22))
+  .force('radial', d3.forceRadial(
+    d => (1-(d.deg-2)/22)*Math.min(W,H)*0.41, W/2, H/2
+  ).strength(0.6));
+
+const gLinks  = svg.append('g');
+const gNodes  = svg.append('g');
+const gLabels = svg.append('g');
+
+const lines = gLinks.selectAll('line').data(EDGES).enter().append('line')
+  .attr('stroke',           d => edgeColor(d.level))
+  .attr('stroke-width',     d => d.level===5 ? 1.8 : d.level===4 ? 1.3 : 0.9)
+  .attr('stroke-dasharray', d => d.level===3 ? '5,3' : null)
+  .attr('stroke-opacity',   d => d.level===5 ? 0.72 : d.level===4 ? 0.62 : 0.45)
+  .attr('marker-end',       d => 'url(#arr'+d.level+')');
+
+const circles = gNodes.selectAll('circle').data(NODES).enter().append('circle')
+  .attr('r', d => r(d.deg))
+  .attr('fill','#1B2A4A')
+  .attr('fill-opacity', d => 0.5+(d.deg/24)*0.4)
+  .attr('stroke','#fff').attr('stroke-width',2)
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
+  );
+
+const bgRects = gLabels.selectAll('rect').data(NODES).enter().append('rect')
+  .attr('fill','white').attr('fill-opacity',0.88).attr('rx',2);
+
+const texts = gLabels.selectAll('text').data(NODES).enter().append('text')
+  .text(d => d.id)
+  .attr('font-size',   d => d.deg>=15 ? 11 : d.deg>=8 ? 10 : 9)
+  .attr('font-family', 'Arial, sans-serif')
+  .attr('font-weight', d => d.deg>=15 ? '500' : '400')
+  .attr('fill','#1B2A4A')
+  .attr('text-anchor','middle')
+  .attr('pointer-events','none');
+
+function highlight(hoveredId) {
+  const connected = new Set([hoveredId]);
+  const active    = new Set();
+  EDGES.forEach((e,i) => {
+    const s = e.source.id||e.source, t = e.target.id||e.target;
+    if (s===hoveredId || t===hoveredId) { connected.add(s); connected.add(t); active.add(i); }
+  });
+  lines
+    .attr('stroke-opacity', (d,i) => active.has(i) ? (d.level===5?0.9:d.level===4?0.85:0.75) : 0.04)
+    .attr('stroke-width',   (d,i) => active.has(i) ? (d.level===5?2.4:d.level===4?1.8:1.2)   : 0.5);
+  circles
+    .attr('fill-opacity', d => connected.has(d.id) ? (d.id===hoveredId?0.95:0.8) : 0.08)
+    .attr('stroke',       d => d.id===hoveredId ? '#F5A800' : '#fff')
+    .attr('stroke-width', d => d.id===hoveredId ? 3 : 2);
+  bgRects.attr('fill-opacity', d => connected.has(d.id) ? 0.92 : 0.2);
+  texts.attr('fill',           d => connected.has(d.id) ? '#1B2A4A' : '#ccc');
+}
+
+function reset() {
+  lines
+    .attr('stroke-opacity', d => d.level===5?0.72:d.level===4?0.62:0.45)
+    .attr('stroke-width',   d => d.level===5?1.8:d.level===4?1.3:0.9);
+  circles
+    .attr('fill-opacity', d => 0.5+(d.deg/24)*0.4)
+    .attr('stroke','#fff').attr('stroke-width',2);
+  bgRects.attr('fill-opacity',0.88);
+  texts.attr('fill','#1B2A4A');
+}
+
+circles
+  .on('mouseover', (_,d) => highlight(d.id))
+  .on('mouseout',  ()    => reset());
+
+sim.on('tick', () => {
+  const pad = 40;
+  NODES.forEach(d => {
+    d.x = Math.max(pad, Math.min(W-pad, d.x));
+    d.y = Math.max(pad, Math.min(H-pad, d.y));
+  });
+  lines
+    .attr('x1',d=>{ const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.source.x+dx/L*R; })
+    .attr('y1',d=>{ const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.source.y+dy/L*R; })
+    .attr('x2',d=>{ const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.target.x+dx/L*R; })
+    .attr('y2',d=>{ const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.target.y+dy/L*R; });
+  circles.attr('cx',d=>d.x).attr('cy',d=>d.y);
+  texts.attr('x',d=>d.x).attr('y',d=>d.y+r(d.deg)+12);
+  bgRects.each(function(d){
+    const el = texts.filter(n=>n.id===d.id).node();
+    if(!el) return;
+    const b = el.getBBox();
+    d3.select(this).attr('x',b.x-3).attr('y',b.y-1).attr('width',b.width+6).attr('height',b.height+2);
+  });
+});
+</script>
