@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Brasília · Mapa de Conexões 2026</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 24px; background: #fff; color: #1B2A4A; }
+</style>
+</head>
+<body>
+
+<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+  <span style="font-size:13px;font-weight:500;margin-right:8px;">Brasília · mapa de conexões 2026</span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#555;">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#0F6E56" stroke-width="2.5"/><polygon points="22,0 30,4 22,8" fill="#0F6E56"/></svg>Nível 5 · parceria ativa
+  </span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#555;">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#F5A800" stroke-width="2"/><polygon points="22,0 30,4 22,8" fill="#F5A800"/></svg>Nível 4 · conexão pontual
+  </span>
+  <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:#555;">
+    <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#AAAAAA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="22,0 30,4 22,8" fill="#AAAAAA"/></svg>Nível 3 · parceria passada
+  </span>
+</div>
+
+<div id="wrap" style="width:100%;border:0.5px solid #ddd;border-radius:12px;background:#fff;overflow:hidden;"></div>
+
+<p style="font-size:11px;color:#aaa;margin-top:8px;text-align:center;">Passe o mouse sobre uma organização para destacar suas conexões · nós são arrastáveis</p>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const NODES = [
+  {id:"SEBRAE/DF",deg:24},
+  {id:"Instituto Sabin",deg:20},
+  {id:"Cotidiano",deg:20},
+  {id:"Impact Hub",deg:17},
+  {id:"Instituto Autismos",deg:13},
+  {id:"Onda Sup",deg:13},
+  {id:"Ubuntu",deg:13},
+  {id:"VerdeNovo",deg:13},
+  {id:"Universidade de Brasília",deg:12},
+  {id:"Conectas",deg:12},
+  {id:"BIOTIC",deg:11},
+  {id:"Insight Social",deg:11},
+  {id:"Governo do Distrito Federal - GDF",deg:10},
+  {id:"CEUB",deg:9},
+  {id:"Ministério da Gestão e Inovação",deg:6},
+  {id:"Triven",deg:6},
+  {id:"Sistema Fibra",deg:5},
+];
+
+const EDGES = [
+  ["BIOTIC","Cotidiano",5],["BIOTIC","Governo do Distrito Federal - GDF",5],
+  ["BIOTIC","Impact Hub",4],["BIOTIC","SEBRAE/DF",5],["BIOTIC","Sistema Fibra",5],
+  ["BIOTIC","Universidade de Brasília",4],
+  ["CEUB","BIOTIC",5],["CEUB","SEBRAE/DF",4],["CEUB","Ubuntu",5],
+  ["Conectas","CEUB",3],["Conectas","Impact Hub",5],["Conectas","Insight Social",4],
+  ["Conectas","Instituto Autismos",4],["Conectas","Instituto Sabin",3],
+  ["Conectas","SEBRAE/DF",4],["Conectas","VerdeNovo",4],
+  ["Cotidiano","BIOTIC",5],["Cotidiano","CEUB",4],["Cotidiano","Conectas",4],
+  ["Cotidiano","Governo do Distrito Federal - GDF",4],["Cotidiano","Impact Hub",4],
+  ["Cotidiano","Instituto Sabin",4],["Cotidiano","Ministério da Gestão e Inovação",4],
+  ["Cotidiano","Onda Sup",5],["Cotidiano","SEBRAE/DF",3],["Cotidiano","Sistema Fibra",3],
+  ["Cotidiano","Ubuntu",3],
+  ["Impact Hub","Cotidiano",4],["Impact Hub","Governo do Distrito Federal - GDF",5],
+  ["Impact Hub","Instituto Sabin",4],["Impact Hub","Ministério da Gestão e Inovação",5],
+  ["Impact Hub","Onda Sup",4],["Impact Hub","SEBRAE/DF",4],
+  ["Impact Hub","Universidade de Brasília",3],["Impact Hub","VerdeNovo",4],
+  ["Insight Social","Conectas",5],
+  ["Insight Social","Governo do Distrito Federal - GDF",5],["Insight Social","Impact Hub",3],
+  ["Insight Social","Instituto Autismos",5],["Insight Social","Instituto Sabin",5],
+  ["Insight Social","SEBRAE/DF",4],["Insight Social","Sistema Fibra",3],
+  ["Insight Social","Universidade de Brasília",4],
+  ["Instituto Autismos","CEUB",3],["Instituto Autismos","Conectas",4],
+  ["Instituto Autismos","Governo do Distrito Federal - GDF",4],["Instituto Autismos","Impact Hub",4],
+  ["Instituto Autismos","Insight Social",5],["Instituto Autismos","Instituto Sabin",5],
+  ["Instituto Autismos","Onda Sup",4],["Instituto Autismos","SEBRAE/DF",3],
+  ["Instituto Autismos","Universidade de Brasília",5],
+  ["Instituto Sabin","CEUB",4],["Instituto Sabin","Conectas",3],
+  ["Instituto Sabin","Cotidiano",4],
+  ["Instituto Sabin","Governo do Distrito Federal - GDF",5],["Instituto Sabin","Impact Hub",5],
+  ["Instituto Sabin","Instituto Autismos",5],["Instituto Sabin","Onda Sup",5],
+  ["Instituto Sabin","SEBRAE/DF",4],["Instituto Sabin","Universidade de Brasília",3],
+  ["Instituto Sabin","VerdeNovo",5],
+  ["Onda Sup","Cotidiano",3],["Onda Sup","Governo do Distrito Federal - GDF",5],
+  ["Onda Sup","Impact Hub",3],["Onda Sup","Instituto Sabin",3],
+  ["Onda Sup","SEBRAE/DF",4],["Onda Sup","Universidade de Brasília",4],
+  ["SEBRAE/DF","BIOTIC",5],["SEBRAE/DF","CEUB",4],["SEBRAE/DF","Cotidiano",5],
+  ["SEBRAE/DF","Governo do Distrito Federal - GDF",5],["SEBRAE/DF","Impact Hub",4],
+  ["SEBRAE/DF","Instituto Autismos",3],["SEBRAE/DF","Instituto Sabin",4],
+  ["SEBRAE/DF","Ministério da Gestão e Inovação",4],["SEBRAE/DF","Onda Sup",4],
+  ["SEBRAE/DF","Sistema Fibra",5],["SEBRAE/DF","Triven",4],
+  ["SEBRAE/DF","Universidade de Brasília",5],["SEBRAE/DF","VerdeNovo",3],
+  ["Triven","BIOTIC",4],["Triven","CEUB",3],["Triven","Cotidiano",5],["Triven","Ubuntu",3],
+  ["Ubuntu","BIOTIC",3],["Ubuntu","Cotidiano",5],
+  ["Ubuntu","Governo do Distrito Federal - GDF",5],["Ubuntu","Instituto Sabin",3],
+  ["Ubuntu","Ministério da Gestão e Inovação",3],["Ubuntu","Onda Sup",3],
+  ["Ubuntu","SEBRAE/DF",5],["Ubuntu","Triven",5],["Ubuntu","Universidade de Brasília",3],
+  ["Ubuntu","VerdeNovo",5],
+  ["Universidade de Brasília","Cotidiano",3],
+  ["Universidade de Brasília","Governo do Distrito Federal - GDF",3],
+  ["Universidade de Brasília","Ministério da Gestão e Inovação",3],
+  ["Universidade de Brasília","Sistema Fibra",3],
+  ["VerdeNovo","Conectas",3],["VerdeNovo","Cotidiano",4],
+  ["VerdeNovo","Impact Hub",5],
+  ["VerdeNovo","Instituto Sabin",3],["VerdeNovo","Ministério da Gestão e Inovação",3],
+  ["VerdeNovo","Onda Sup",4],["VerdeNovo","SEBRAE/DF",4],
+].map(([s,t,l]) => ({source:s, target:t, level:l}));
+
+const SHORT = {
+  "Governo do Distrito Federal - GDF": "GDF",
+  "Universidade de Brasília": "UnB",
+  "Ministério da Gestão e Inovação": "Min. Gestão e Inovação",
+};
+const label = id => SHORT[id] || id;
+
+const wrap = document.getElementById('wrap');
+const W = Math.min(wrap.offsetWidth || 900, 1200);
+const H = Math.round(W * 0.74);
+wrap.style.height = H + 'px';
+
+const svg = d3.select('#wrap').append('svg').attr('width',W).attr('height',H);
+const defs = svg.append('defs');
+const edgeColor = lv => lv===5 ? '#0F6E56' : lv===4 ? '#F5A800' : '#BBBBBB';
+
+[5,4,3].forEach(lv => {
+  defs.append('marker').attr('id','arr'+lv)
+    .attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5Z').attr('fill',edgeColor(lv));
+});
+
+const maxDeg = d3.max(NODES, d => d.deg);
+const r = d3.scaleSqrt().domain([2, maxDeg]).range([9,27]);
+
+const sim = d3.forceSimulation(NODES)
+  .force('link', d3.forceLink(EDGES).id(d=>d.id)
+    .distance(d => 100-((d.source.deg||8)+(d.target.deg||8))*1.2)
+    .strength(0.25))
+  .force('charge', d3.forceManyBody().strength(d => -160-d.deg*9))
+  .force('center', d3.forceCenter(W/2, H/2))
+  .force('collide', d3.forceCollide(d => r(d.deg)+22))
+  .force('radial', d3.forceRadial(
+    d => (1-(d.deg-2)/(maxDeg-2))*Math.min(W,H)*0.41, W/2, H/2
+  ).strength(0.6));
+
+const gLinks  = svg.append('g');
+const gNodes  = svg.append('g');
+const gLabels = svg.append('g');
+
+const lines = gLinks.selectAll('line').data(EDGES).enter().append('line')
+  .attr('stroke',           d => edgeColor(d.level))
+  .attr('stroke-width',     d => d.level===5 ? 1.8 : d.level===4 ? 1.3 : 0.9)
+  .attr('stroke-dasharray', d => d.level===3 ? '5,3' : null)
+  .attr('stroke-opacity',   d => d.level===5 ? 0.72 : d.level===4 ? 0.62 : 0.45)
+  .attr('marker-end',       d => 'url(#arr'+d.level+')');
+
+const circles = gNodes.selectAll('circle').data(NODES).enter().append('circle')
+  .attr('r', d => r(d.deg))
+  .attr('fill','#1B2A4A')
+  .attr('fill-opacity', d => 0.5+(d.deg/maxDeg)*0.4)
+  .attr('stroke','#fff').attr('stroke-width',2)
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
+  );
+
+const bgRects = gLabels.selectAll('rect').data(NODES).enter().append('rect')
+  .attr('fill','white').attr('fill-opacity',0.88).attr('rx',2);
+
+const texts = gLabels.selectAll('text').data(NODES).enter().append('text')
+  .text(d => label(d.id))
+  .attr('font-size',   d => d.deg>=15 ? 11 : d.deg>=8 ? 10 : 9)
+  .attr('font-family', 'Arial, sans-serif')
+  .attr('font-weight', d => d.deg>=15 ? '500' : '400')
+  .attr('fill','#1B2A4A')
+  .attr('text-anchor','middle')
+  .attr('pointer-events','none');
+
+function highlight(hoveredId) {
+  const connected = new Set([hoveredId]);
+  const active    = new Set();
+  EDGES.forEach((e,i) => {
+    const s = e.source.id||e.source, t = e.target.id||e.target;
+    if (s===hoveredId || t===hoveredId) { connected.add(s); connected.add(t); active.add(i); }
+  });
+  lines
+    .attr('stroke-opacity', (d,i) => active.has(i) ? (d.level===5?0.9:d.level===4?0.85:0.75) : 0.04)
+    .attr('stroke-width',   (d,i) => active.has(i) ? (d.level===5?2.4:d.level===4?1.8:1.2)   : 0.5);
+  circles
+    .attr('fill-opacity', d => connected.has(d.id) ? (d.id===hoveredId?0.95:0.8) : 0.08)
+    .attr('stroke',       d => d.id===hoveredId ? '#F5A800' : '#fff')
+    .attr('stroke-width', d => d.id===hoveredId ? 3 : 2);
+  bgRects.attr('fill-opacity', d => connected.has(d.id) ? 0.92 : 0.2);
+  texts.attr('fill',           d => connected.has(d.id) ? '#1B2A4A' : '#ccc');
+}
+
+function reset() {
+  lines
+    .attr('stroke-opacity', d => d.level===5?0.72:d.level===4?0.62:0.45)
+    .attr('stroke-width',   d => d.level===5?1.8:d.level===4?1.3:0.9);
+  circles
+    .attr('fill-opacity', d => 0.5+(d.deg/maxDeg)*0.4)
+    .attr('stroke','#fff').attr('stroke-width',2);
+  bgRects.attr('fill-opacity',0.88);
+  texts.attr('fill','#1B2A4A');
+}
+
+circles
+  .on('mouseover', (_,d) => highlight(d.id))
+  .on('mouseout',  ()    => reset());
+
+sim.on('tick', () => {
+  const pad = 40;
+  NODES.forEach(d => {
+    d.x = Math.max(pad, Math.min(W-pad, d.x));
+    d.y = Math.max(pad, Math.min(H-pad, d.y));
+  });
+  lines
+    .attr('x1',d=>{ const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.source.x+dx/L*R; })
+    .attr('y1',d=>{ const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.source.y+dy/L*R; })
+    .attr('x2',d=>{ const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.target.x+dx/L*R; })
+    .attr('y2',d=>{ const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1; return d.target.y+dy/L*R; });
+  circles.attr('cx',d=>d.x).attr('cy',d=>d.y);
+  texts.attr('x',d=>d.x).attr('y',d=>d.y+r(d.deg)+12);
+  bgRects.each(function(d){
+    const el = texts.filter(n=>n.id===d.id).node();
+    if(!el) return;
+    const b = el.getBBox();
+    d3.select(this).attr('x',b.x-3).attr('y',b.y-1).attr('width',b.width+6).attr('height',b.height+2);
+  });
+});
+</script>
+</body>
+</html>
