@@ -1,0 +1,307 @@
+
+<div style="font-family:var(--font-sans);padding:0">
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--color-text-secondary)">
+    <span style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-right:4px">Paranaguá · mapa de conexões 2026</span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#0F6E56" stroke-width="2.5"/><polygon points="22,0 30,4 22,8" fill="#0F6E56"/></svg>Nível 5 · parceria ativa
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#F5A800" stroke-width="2"/><polygon points="22,0 30,4 22,8" fill="#F5A800"/></svg>Nível 4 · conexão pontual
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#AAAAAA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="22,0 30,4 22,8" fill="#AAAAAA"/></svg>Nível 3 · parceria passada
+    </span>
+  </div>
+  <div id="wrap" style="width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:12px;background:var(--color-background-primary);overflow:hidden"></div>
+  <p style="font-size:11px;color:var(--color-text-secondary);margin-top:8px;text-align:center">Passe o mouse sobre uma organização para destacar suas conexões · nós são arrastáveis</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const NAME={
+  "SEBRAE/PR":"SEBRAE/PR",
+  "IFPR - Campus Paranaguá":"IFPR Paranaguá",
+  "Impact Hub":"Impact Hub",
+  "Prefeitura de Paranaguá - SECULTUR":"Pref. SECULTUR",
+  "Instituto Ecoe":"Instituto Ecoe",
+  "Portos do Paraná":"Portos do Paraná",
+  "Oxigênio Eventos":"Oxigênio Eventos",
+  "Unespar":"Unespar",
+  "Cattalini Terminais Marítimos S/A":"Cattalini Terminais",
+  "Fundação Grupo Boticário":"Fund. Boticário",
+  "ADETUR Litoral":"ADETUR Litoral",
+  "ACIAP":"ACIAP",
+  "Rocha Terminais":"Rocha Terminais",
+  "Rumo Logística":"Rumo Logística",
+  "Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|":"SGDES",
+  "Secretaria de Inovação e Inteligência Artificial do Paraná":"Sec. Inovação/IA PR",
+  "Comunidade Tradicional de Eufrasina (Turismo)":"Com. Eufrasina",
+  "Macondo Chocolates Artesanais":"Macondo Chocolates",
+  "Prefeitura de Paranaguá - SEDEHAB":"Pref. SEDEHAB"
+};
+
+const RAW_NODES=[
+  {id:"SEBRAE/PR",deg:28},{id:"IFPR - Campus Paranaguá",deg:28},{id:"Impact Hub",deg:28},
+  {id:"Prefeitura de Paranaguá - SECULTUR",deg:27},{id:"Instituto Ecoe",deg:25},
+  {id:"Portos do Paraná",deg:23},{id:"Oxigênio Eventos",deg:23},{id:"Unespar",deg:21},
+  {id:"Cattalini Terminais Marítimos S/A",deg:20},{id:"Fundação Grupo Boticário",deg:20},
+  {id:"ADETUR Litoral",deg:19},{id:"ACIAP",deg:18},{id:"Rocha Terminais",deg:17},
+  {id:"Rumo Logística",deg:17},
+  {id:"Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",deg:17},
+  {id:"Secretaria de Inovação e Inteligência Artificial do Paraná",deg:14},
+  {id:"Comunidade Tradicional de Eufrasina (Turismo)",deg:11},
+  {id:"Macondo Chocolates Artesanais",deg:8},
+  {id:"Prefeitura de Paranaguá - SEDEHAB",deg:4}
+];
+
+const RAW_EDGES=[
+  ["ACIAP","Cattalini Terminais Marítimos S/A",5],["ACIAP","SEBRAE/PR",4],
+  ["ACIAP","Prefeitura de Paranaguá - SECULTUR",5],["ACIAP","IFPR - Campus Paranaguá",3],
+  ["ACIAP","ADETUR Litoral",3],["ACIAP","Rocha Terminais",3],
+  ["ACIAP","Prefeitura de Paranaguá - SEDEHAB",4],["ACIAP","Portos do Paraná",4],
+  ["Cattalini Terminais Marítimos S/A","Oxigênio Eventos",4],
+  ["Cattalini Terminais Marítimos S/A","SEBRAE/PR",3],
+  ["Cattalini Terminais Marítimos S/A","Instituto Ecoe",4],
+  ["Cattalini Terminais Marítimos S/A","Prefeitura de Paranaguá - SECULTUR",4],
+  ["Cattalini Terminais Marítimos S/A","IFPR - Campus Paranaguá",5],
+  ["Cattalini Terminais Marítimos S/A","ACIAP",5],
+  ["Cattalini Terminais Marítimos S/A","Rocha Terminais",5],
+  ["Cattalini Terminais Marítimos S/A","Rumo Logística",5],
+  ["Cattalini Terminais Marítimos S/A","Portos do Paraná",5],
+  ["ADETUR Litoral","Oxigênio Eventos",4],["ADETUR Litoral","SEBRAE/PR",5],
+  ["ADETUR Litoral","Instituto Ecoe",3],["ADETUR Litoral","Prefeitura de Paranaguá - SECULTUR",4],
+  ["ADETUR Litoral","Comunidade Tradicional de Eufrasina (Turismo)",4],
+  ["ADETUR Litoral","ACIAP",3],["ADETUR Litoral","Fundação Grupo Boticário",4],
+  ["ADETUR Litoral","Rumo Logística",3],["ADETUR Litoral","Unespar",5],
+  ["ADETUR Litoral","Impact Hub",3],
+  ["Impact Hub","Oxigênio Eventos",4],["Impact Hub","Cattalini Terminais Marítimos S/A",4],
+  ["Impact Hub","SEBRAE/PR",4],["Impact Hub","Instituto Ecoe",5],
+  ["Impact Hub","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",4],
+  ["Impact Hub","Prefeitura de Paranaguá - SECULTUR",4],
+  ["Impact Hub","Macondo Chocolates Artesanais",4],["Impact Hub","IFPR - Campus Paranaguá",5],
+  ["Impact Hub","Comunidade Tradicional de Eufrasina (Turismo)",4],
+  ["Impact Hub","ADETUR Litoral",4],["Impact Hub","Rocha Terminais",4],
+  ["Impact Hub","Fundação Grupo Boticário",5],["Impact Hub","Rumo Logística",4],
+  ["Impact Hub","Unespar",4],["Impact Hub","Portos do Paraná",4],
+  ["Portos do Paraná","SEBRAE/PR",4],["Portos do Paraná","Prefeitura de Paranaguá - SECULTUR",3],
+  ["Portos do Paraná","IFPR - Campus Paranaguá",5],
+  ["Portos do Paraná","Comunidade Tradicional de Eufrasina (Turismo)",5],
+  ["Portos do Paraná","ACIAP",3],["Portos do Paraná","Rocha Terminais",4],
+  ["Portos do Paraná","Rumo Logística",4],["Portos do Paraná","Unespar",4],
+  ["Portos do Paraná","Secretaria de Inovação e Inteligência Artificial do Paraná",4],
+  ["Fundação Grupo Boticário","Oxigênio Eventos",4],
+  ["Fundação Grupo Boticário","Cattalini Terminais Marítimos S/A",4],
+  ["Fundação Grupo Boticário","SEBRAE/PR",5],["Fundação Grupo Boticário","Instituto Ecoe",4],
+  ["Fundação Grupo Boticário","IFPR - Campus Paranaguá",4],
+  ["Fundação Grupo Boticário","ADETUR Litoral",4],["Fundação Grupo Boticário","ACIAP",4],
+  ["Fundação Grupo Boticário","Rumo Logística",4],["Fundação Grupo Boticário","Unespar",4],
+  ["Fundação Grupo Boticário","Portos do Paraná",4],["Fundação Grupo Boticário","Impact Hub",4],
+  ["Oxigênio Eventos","Cattalini Terminais Marítimos S/A",3],["Oxigênio Eventos","SEBRAE/PR",3],
+  ["Oxigênio Eventos","Instituto Ecoe",4],
+  ["Oxigênio Eventos","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",4],
+  ["Oxigênio Eventos","Prefeitura de Paranaguá - SECULTUR",3],
+  ["Oxigênio Eventos","Macondo Chocolates Artesanais",4],["Oxigênio Eventos","IFPR - Campus Paranaguá",3],
+  ["Oxigênio Eventos","ADETUR Litoral",3],["Oxigênio Eventos","ACIAP",4],
+  ["Oxigênio Eventos","Rocha Terminais",3],["Oxigênio Eventos","Fundação Grupo Boticário",4],
+  ["Oxigênio Eventos","Rumo Logística",3],["Oxigênio Eventos","Unespar",4],
+  ["Oxigênio Eventos","Secretaria de Inovação e Inteligência Artificial do Paraná",4],
+  ["Oxigênio Eventos","Portos do Paraná",4],["Oxigênio Eventos","Impact Hub",4],
+  ["Instituto Ecoe","Oxigênio Eventos",4],
+  ["Instituto Ecoe","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",4],
+  ["Instituto Ecoe","Prefeitura de Paranaguá - SECULTUR",4],
+  ["Instituto Ecoe","Macondo Chocolates Artesanais",4],["Instituto Ecoe","IFPR - Campus Paranaguá",5],
+  ["Instituto Ecoe","Comunidade Tradicional de Eufrasina (Turismo)",4],
+  ["Instituto Ecoe","ADETUR Litoral",3],["Instituto Ecoe","ACIAP",4],
+  ["Instituto Ecoe","Prefeitura de Paranaguá - SEDEHAB",4],
+  ["Instituto Ecoe","Fundação Grupo Boticário",4],["Instituto Ecoe","Unespar",5],
+  ["Instituto Ecoe","Secretaria de Inovação e Inteligência Artificial do Paraná",4],
+  ["Instituto Ecoe","Impact Hub",5],
+  ["IFPR - Campus Paranaguá","Oxigênio Eventos",5],
+  ["IFPR - Campus Paranaguá","Cattalini Terminais Marítimos S/A",4],
+  ["IFPR - Campus Paranaguá","SEBRAE/PR",5],["IFPR - Campus Paranaguá","Instituto Ecoe",5],
+  ["IFPR - Campus Paranaguá","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",4],
+  ["IFPR - Campus Paranaguá","Prefeitura de Paranaguá - SECULTUR",5],
+  ["IFPR - Campus Paranaguá","ADETUR Litoral",5],["IFPR - Campus Paranaguá","ACIAP",4],
+  ["IFPR - Campus Paranaguá","Fundação Grupo Boticário",5],["IFPR - Campus Paranaguá","Rumo Logística",3],
+  ["IFPR - Campus Paranaguá","Unespar",5],
+  ["IFPR - Campus Paranaguá","Secretaria de Inovação e Inteligência Artificial do Paraná",4],
+  ["IFPR - Campus Paranaguá","Portos do Paraná",5],["IFPR - Campus Paranaguá","Impact Hub",4],
+  ["Rocha Terminais","Cattalini Terminais Marítimos S/A",5],["Rocha Terminais","SEBRAE/PR",4],
+  ["Rocha Terminais","Instituto Ecoe",4],["Rocha Terminais","IFPR - Campus Paranaguá",4],
+  ["Rocha Terminais","ACIAP",4],["Rocha Terminais","Rumo Logística",4],
+  ["Rocha Terminais","Unespar",4],["Rocha Terminais","Portos do Paraná",4],
+  ["Rocha Terminais","Impact Hub",4],
+  ["Prefeitura de Paranaguá - SECULTUR","Oxigênio Eventos",3],
+  ["Prefeitura de Paranaguá - SECULTUR","Cattalini Terminais Marítimos S/A",5],
+  ["Prefeitura de Paranaguá - SECULTUR","SEBRAE/PR",5],
+  ["Prefeitura de Paranaguá - SECULTUR","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",3],
+  ["Prefeitura de Paranaguá - SECULTUR","IFPR - Campus Paranaguá",4],
+  ["Prefeitura de Paranaguá - SECULTUR","Comunidade Tradicional de Eufrasina (Turismo)",5],
+  ["Prefeitura de Paranaguá - SECULTUR","ADETUR Litoral",5],
+  ["Prefeitura de Paranaguá - SECULTUR","ACIAP",4],
+  ["Prefeitura de Paranaguá - SECULTUR","Rocha Terminais",3],
+  ["Prefeitura de Paranaguá - SECULTUR","Prefeitura de Paranaguá - SEDEHAB",4],
+  ["Prefeitura de Paranaguá - SECULTUR","Fundação Grupo Boticário",3],
+  ["Prefeitura de Paranaguá - SECULTUR","Rumo Logística",5],
+  ["Prefeitura de Paranaguá - SECULTUR","Unespar",5],
+  ["Prefeitura de Paranaguá - SECULTUR","Portos do Paraná",5],
+  ["Prefeitura de Paranaguá - SECULTUR","Impact Hub",4],
+  ["SEBRAE/PR","Cattalini Terminais Marítimos S/A",3],["SEBRAE/PR","Instituto Ecoe",3],
+  ["SEBRAE/PR","Prefeitura de Paranaguá - SECULTUR",4],["SEBRAE/PR","IFPR - Campus Paranaguá",5],
+  ["SEBRAE/PR","ADETUR Litoral",4],["SEBRAE/PR","ACIAP",4],["SEBRAE/PR","Rocha Terminais",3],
+  ["SEBRAE/PR","Fundação Grupo Boticário",3],["SEBRAE/PR","Rumo Logística",3],
+  ["SEBRAE/PR","Unespar",5],
+  ["SEBRAE/PR","Secretaria de Inovação e Inteligência Artificial do Paraná",5],
+  ["SEBRAE/PR","Portos do Paraná",5],["SEBRAE/PR","Impact Hub",3],
+  ["Macondo Chocolates Artesanais","SEBRAE/PR",4],["Macondo Chocolates Artesanais","Instituto Ecoe",4],
+  ["Macondo Chocolates Artesanais","IFPR - Campus Paranaguá",4],
+  ["Macondo Chocolates Artesanais","Fundação Grupo Boticário",4],
+  ["Macondo Chocolates Artesanais","Impact Hub",4],
+  ["Rumo Logística","Cattalini Terminais Marítimos S/A",3],
+  ["Rumo Logística","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",3],
+  ["Rumo Logística","Prefeitura de Paranaguá - SECULTUR",3],["Rumo Logística","Rocha Terminais",3],
+  ["Rumo Logística","Prefeitura de Paranaguá - SEDEHAB",3],["Rumo Logística","Portos do Paraná",3],
+  ["Rumo Logística","Impact Hub",3],
+  ["Unespar","Cattalini Terminais Marítimos S/A",4],["Unespar","SEBRAE/PR",5],
+  ["Unespar","Instituto Ecoe",4],["Unespar","Prefeitura de Paranaguá - SECULTUR",5],
+  ["Unespar","IFPR - Campus Paranaguá",5],["Unespar","ADETUR Litoral",3],
+  ["Unespar","Secretaria de Inovação e Inteligência Artificial do Paraná",4],
+  ["Unespar","Portos do Paraná",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Cattalini Terminais Marítimos S/A",4],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","SEBRAE/PR",4],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Instituto Ecoe",4],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","IFPR - Campus Paranaguá",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Comunidade Tradicional de Eufrasina (Turismo)",4],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Fundação Grupo Boticário",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Unespar",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Secretaria de Inovação e Inteligência Artificial do Paraná",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Portos do Paraná",5],
+  ["Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|","Impact Hub",5],
+  ["Comunidade Tradicional de Eufrasina (Turismo)","SEBRAE/PR",5],
+  ["Comunidade Tradicional de Eufrasina (Turismo)","Instituto Ecoe",5],
+  ["Comunidade Tradicional de Eufrasina (Turismo)","Unespar",3],
+  ["Comunidade Tradicional de Eufrasina (Turismo)","Portos do Paraná",5],
+  ["Comunidade Tradicional de Eufrasina (Turismo)","Impact Hub",3],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","SEBRAE/PR",5],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","Superintendência Geral de Desenvolvimento Econômico e Social - SGDES|",4],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","Prefeitura de Paranaguá - SECULTUR",4],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","IFPR - Campus Paranaguá",4],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","Unespar",4],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","Portos do Paraná",4],
+  ["Secretaria de Inovação e Inteligência Artificial do Paraná","Impact Hub",4]
+];
+
+const NODES = RAW_NODES.map(n=>({...n, label: NAME[n.id]||n.id}));
+const EDGES = RAW_EDGES.map(([s,t,l])=>({source:s, target:t, level:l}));
+
+const wrap=document.getElementById('wrap');
+const W=wrap.offsetWidth||680;
+const H=Math.round(W*0.78);
+wrap.style.height=H+'px';
+
+const svg=d3.select('#wrap').append('svg').attr('width',W).attr('height',H);
+const defs=svg.append('defs');
+const edgeColor=lv=>lv===5?'#0F6E56':lv===4?'#F5A800':'#BBBBBB';
+
+[5,4,3].forEach(lv=>{
+  defs.append('marker').attr('id','arr'+lv)
+    .attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5Z').attr('fill',edgeColor(lv));
+});
+
+const r=d3.scaleSqrt().domain([4,28]).range([8,24]);
+
+const sim=d3.forceSimulation(NODES)
+  .force('link',d3.forceLink(EDGES).id(d=>d.id)
+    .distance(d=>100-((d.source.deg||8)+(d.target.deg||8))*1.1)
+    .strength(0.22))
+  .force('charge',d3.forceManyBody().strength(d=>-160-d.deg*9))
+  .force('center',d3.forceCenter(W/2,H/2))
+  .force('collide',d3.forceCollide(d=>r(d.deg)+22))
+  .force('radial',d3.forceRadial(
+    d=>(1-(d.deg-4)/24)*Math.min(W,H)*0.40,W/2,H/2
+  ).strength(0.6));
+
+const gLinks=svg.append('g');
+const gNodes=svg.append('g');
+const gLabels=svg.append('g');
+
+const lines=gLinks.selectAll('line').data(EDGES).enter().append('line')
+  .attr('stroke',d=>edgeColor(d.level))
+  .attr('stroke-width',d=>d.level===5?1.8:d.level===4?1.3:0.9)
+  .attr('stroke-dasharray',d=>d.level===3?'5,3':null)
+  .attr('stroke-opacity',d=>d.level===5?0.72:d.level===4?0.62:0.45)
+  .attr('marker-end',d=>'url(#arr'+d.level+')');
+
+const circles=gNodes.selectAll('circle').data(NODES).enter().append('circle')
+  .attr('r',d=>r(d.deg))
+  .attr('fill','#1B2A4A')
+  .attr('fill-opacity',d=>0.45+(d.deg/28)*0.45)
+  .attr('stroke','#fff').attr('stroke-width',1.5)
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;})
+  );
+
+const bgRects=gLabels.selectAll('rect').data(NODES).enter().append('rect')
+  .attr('fill','white').attr('fill-opacity',0.88).attr('rx',2);
+
+const texts=gLabels.selectAll('text').data(NODES).enter().append('text')
+  .text(d=>d.label)
+  .attr('font-size',d=>d.deg>=22?11:d.deg>=12?10:9)
+  .attr('font-family','Arial,sans-serif')
+  .attr('font-weight',d=>d.deg>=22?'500':'400')
+  .attr('fill','#1B2A4A')
+  .attr('text-anchor','middle')
+  .attr('pointer-events','none');
+
+function highlight(hid){
+  const conn=new Set([hid]),act=new Set();
+  EDGES.forEach((e,i)=>{
+    const s=e.source.id||e.source,t=e.target.id||e.target;
+    if(s===hid||t===hid){conn.add(s);conn.add(t);act.add(i);}
+  });
+  lines
+    .attr('stroke-opacity',(d,i)=>act.has(i)?(d.level===5?0.9:d.level===4?0.85:0.75):0.04)
+    .attr('stroke-width',(d,i)=>act.has(i)?(d.level===5?2.5:d.level===4?1.8:1.3):0.5);
+  circles
+    .attr('fill-opacity',d=>conn.has(d.id)?(d.id===hid?0.95:0.75):0.07)
+    .attr('stroke',d=>d.id===hid?'#F5A800':'#fff')
+    .attr('stroke-width',d=>d.id===hid?3:1.5);
+  bgRects.attr('fill-opacity',d=>conn.has(d.id)?0.92:0.15);
+  texts.attr('fill',d=>conn.has(d.id)?'#1B2A4A':'#ccc');
+}
+
+function reset(){
+  lines
+    .attr('stroke-opacity',d=>d.level===5?0.72:d.level===4?0.62:0.45)
+    .attr('stroke-width',d=>d.level===5?1.8:d.level===4?1.3:0.9);
+  circles
+    .attr('fill-opacity',d=>0.45+(d.deg/28)*0.45)
+    .attr('stroke','#fff').attr('stroke-width',1.5);
+  bgRects.attr('fill-opacity',0.88);
+  texts.attr('fill','#1B2A4A');
+}
+
+circles.on('mouseover',(_,d)=>highlight(d.id)).on('mouseout',()=>reset());
+
+sim.on('tick',()=>{
+  const pad=36;
+  NODES.forEach(d=>{d.x=Math.max(pad,Math.min(W-pad,d.x));d.y=Math.max(pad,Math.min(H-pad,d.y));});
+  lines
+    .attr('x1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.x+dx/L*R;})
+    .attr('y1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.y+dy/L*R;})
+    .attr('x2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x+dx/L*R;})
+    .attr('y2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y+dy/L*R;});
+  circles.attr('cx',d=>d.x).attr('cy',d=>d.y);
+  texts.attr('x',d=>d.x).attr('y',d=>d.y+r(d.deg)+11);
+  bgRects.each(function(d){
+    const el=texts.filter(n=>n.id===d.id).node();
+    if(!el)return;
+    const b=el.getBBox();
+    d3.select(this).attr('x',b.x-3).attr('y',b.y-1).attr('width',b.width+6).attr('height',b.height+2);
+  });
+});
+</script>

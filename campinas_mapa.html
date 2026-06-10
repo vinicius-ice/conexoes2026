@@ -1,0 +1,216 @@
+
+<div style="font-family:var(--font-sans);padding:0">
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--color-text-secondary)">
+    <span style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-right:4px">Campinas · mapa de conexões 2026</span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#0F6E56" stroke-width="2.5"/><polygon points="22,0 30,4 22,8" fill="#0F6E56"/></svg>Nível 5 · parceria ativa
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#F5A800" stroke-width="2"/><polygon points="22,0 30,4 22,8" fill="#F5A800"/></svg>Nível 4 · conexão pontual
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#AAAAAA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="22,0 30,4 22,8" fill="#AAAAAA"/></svg>Nível 3 · parceria passada
+    </span>
+  </div>
+  <div id="wrap" style="width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:12px;background:var(--color-background-primary);overflow:hidden"></div>
+  <p style="font-size:11px;color:var(--color-text-secondary);margin-top:8px;text-align:center">Passe o mouse sobre uma organização para destacar suas conexões · nós são arrastáveis</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const NODES=[
+  {id:"2.5 Ventures",deg:32},{id:"FEAC",deg:29},{id:"PUC-Campinas",deg:28},
+  {id:"Inova Unicamp",deg:26},{id:"SEBRAE",deg:25},{id:"Baita Aceleradora",deg:23},
+  {id:"Luciana O. Consultoria",deg:22},{id:"Fundepag",deg:20},{id:"WorxBase",deg:18},
+  {id:"Casa Hacker",deg:16},{id:"Consultora Stella G.",deg:16},{id:"Ozipa Criativa",deg:16},
+  {id:"IAPRENDI",deg:14},{id:"Integra Campinas",deg:14},{id:"Venture Hub",deg:12},
+  {id:"Campinas Tech",deg:11},{id:"Friendly English",deg:11},{id:"Fundação Educar",deg:10},
+  {id:"SENAI",deg:10},{id:"Guaraípu",deg:9},{id:"Unicamp",deg:9},{id:"IPISA",deg:9},
+  {id:"NSC Softex",deg:8},{id:"SMDETI Prefeitura",deg:8},{id:"Techoá",deg:6},
+  {id:"AAQQ",deg:3},{id:"Yunus Neg. Sociais",deg:2},{id:"Impacto Científico",deg:1}
+];
+
+const EDGES=[
+  ["2.5 Ventures","Baita Aceleradora",4],["2.5 Ventures","Campinas Tech",4],["2.5 Ventures","Casa Hacker",3],
+  ["2.5 Ventures","Consultora Stella G.",4],["2.5 Ventures","FEAC",4],["2.5 Ventures","Fundação Educar",4],
+  ["2.5 Ventures","Fundepag",4],["2.5 Ventures","Guaraípu",4],["2.5 Ventures","IAPRENDI",4],
+  ["2.5 Ventures","Inova Unicamp",5],["2.5 Ventures","Integra Campinas",4],["2.5 Ventures","Luciana O. Consultoria",4],
+  ["2.5 Ventures","NSC Softex",4],["2.5 Ventures","Ozipa Criativa",4],["2.5 Ventures","PUC-Campinas",4],
+  ["2.5 Ventures","SEBRAE",3],["2.5 Ventures","SENAI",3],["2.5 Ventures","SMDETI Prefeitura",4],
+  ["2.5 Ventures","Techoá",5],["2.5 Ventures","Unicamp",4],["2.5 Ventures","Venture Hub",4],["2.5 Ventures","WorxBase",4],
+  ["Inova Unicamp","2.5 Ventures",5],["Inova Unicamp","Baita Aceleradora",5],["Inova Unicamp","Campinas Tech",4],
+  ["Inova Unicamp","Casa Hacker",4],["Inova Unicamp","Consultora Stella G.",4],["Inova Unicamp","FEAC",4],
+  ["Inova Unicamp","Fundação Educar",3],["Inova Unicamp","Fundepag",5],["Inova Unicamp","NSC Softex",3],
+  ["Inova Unicamp","Ozipa Criativa",4],["Inova Unicamp","SEBRAE",5],["Inova Unicamp","SENAI",4],
+  ["Inova Unicamp","SMDETI Prefeitura",4],["Inova Unicamp","Techoá",4],["Inova Unicamp","Venture Hub",4],
+  ["Luciana O. Consultoria","2.5 Ventures",3],["Luciana O. Consultoria","Baita Aceleradora",3],
+  ["Luciana O. Consultoria","Campinas Tech",3],["Luciana O. Consultoria","Casa Hacker",4],
+  ["Luciana O. Consultoria","FEAC",3],["Luciana O. Consultoria","Fundação Educar",4],
+  ["Luciana O. Consultoria","Guaraípu",4],["Luciana O. Consultoria","IAPRENDI",3],
+  ["Luciana O. Consultoria","Inova Unicamp",4],["Luciana O. Consultoria","IPISA",3],
+  ["Luciana O. Consultoria","Ozipa Criativa",4],["Luciana O. Consultoria","SEBRAE",3],
+  ["Luciana O. Consultoria","SENAI",3],["Luciana O. Consultoria","Venture Hub",4],["Luciana O. Consultoria","WorxBase",4],
+  ["Baita Aceleradora","Campinas Tech",3],["Baita Aceleradora","Consultora Stella G.",5],
+  ["Baita Aceleradora","FEAC",4],["Baita Aceleradora","Fundação Educar",3],["Baita Aceleradora","Fundepag",5],
+  ["Baita Aceleradora","Inova Unicamp",5],["Baita Aceleradora","Integra Campinas",4],
+  ["Baita Aceleradora","IPISA",5],["Baita Aceleradora","Luciana O. Consultoria",4],
+  ["Baita Aceleradora","NSC Softex",5],["Baita Aceleradora","SEBRAE",4],["Baita Aceleradora","Unicamp",5],
+  ["Baita Aceleradora","Venture Hub",4],["Baita Aceleradora","Yunus Neg. Sociais",3],
+  ["Fundação Educar","FEAC",5],["Fundação Educar","Inova Unicamp",3],["Fundação Educar","PUC-Campinas",5],
+  ["Consultora Stella G.","2.5 Ventures",3],["Consultora Stella G.","Baita Aceleradora",5],
+  ["Consultora Stella G.","Campinas Tech",3],["Consultora Stella G.","Fundepag",4],
+  ["Consultora Stella G.","Inova Unicamp",3],["Consultora Stella G.","Luciana O. Consultoria",3],
+  ["Consultora Stella G.","Ozipa Criativa",5],["Consultora Stella G.","PUC-Campinas",3],["Consultora Stella G.","WorxBase",5],
+  ["WorxBase","2.5 Ventures",3],["WorxBase","Campinas Tech",3],["WorxBase","FEAC",3],
+  ["WorxBase","IAPRENDI",4],["WorxBase","Luciana O. Consultoria",3],["WorxBase","Ozipa Criativa",4],
+  ["WorxBase","PUC-Campinas",5],["WorxBase","SENAI",3],["WorxBase","Venture Hub",3],
+  ["Casa Hacker","2.5 Ventures",5],["Casa Hacker","FEAC",5],["Casa Hacker","Guaraípu",4],
+  ["Casa Hacker","Ozipa Criativa",5],["Casa Hacker","PUC-Campinas",4],["Casa Hacker","SENAI",3],["Casa Hacker","WorxBase",4],
+  ["IPISA","Baita Aceleradora",5],["IPISA","Campinas Tech",3],["IPISA","FEAC",4],
+  ["IPISA","Luciana O. Consultoria",3],["IPISA","NSC Softex",3],["IPISA","SEBRAE",3],["IPISA","Unicamp",3],
+  ["FEAC","2.5 Ventures",4],["FEAC","AAQQ",5],["FEAC","Casa Hacker",5],["FEAC","Fundação Educar",5],
+  ["FEAC","Inova Unicamp",3],["FEAC","Integra Campinas",5],["FEAC","NSC Softex",4],
+  ["FEAC","Ozipa Criativa",5],["FEAC","PUC-Campinas",5],["FEAC","SEBRAE",5],["FEAC","SENAI",5],
+  ["FEAC","SMDETI Prefeitura",3],["FEAC","Techoá",5],["FEAC","Unicamp",5],["FEAC","Venture Hub",4],["FEAC","WorxBase",3],
+  ["Guaraípu","2.5 Ventures",4],["Guaraípu","Casa Hacker",4],["Guaraípu","Luciana O. Consultoria",4],["Guaraípu","PUC-Campinas",3],
+  ["Impacto Científico","Unicamp",5],
+  ["SEBRAE","2.5 Ventures",3],["SEBRAE","Baita Aceleradora",4],["SEBRAE","Campinas Tech",4],
+  ["SEBRAE","Casa Hacker",4],["SEBRAE","FEAC",3],["SEBRAE","Fundepag",5],["SEBRAE","IAPRENDI",4],
+  ["SEBRAE","Inova Unicamp",5],["SEBRAE","NSC Softex",4],["SEBRAE","PUC-Campinas",4],
+  ["SEBRAE","SENAI",5],["SEBRAE","SMDETI Prefeitura",5],["SEBRAE","Techoá",4],["SEBRAE","Unicamp",3],["SEBRAE","Venture Hub",3],
+  ["Integra Campinas","2.5 Ventures",4],["Integra Campinas","AAQQ",5],["Integra Campinas","Casa Hacker",4],
+  ["Integra Campinas","Consultora Stella G.",4],["Integra Campinas","FEAC",5],["Integra Campinas","Friendly English",3],
+  ["Integra Campinas","Ozipa Criativa",5],["Integra Campinas","PUC-Campinas",5],
+  ["Integra Campinas","SMDETI Prefeitura",5],["Integra Campinas","Unicamp",4],["Integra Campinas","WorxBase",3],
+  ["Friendly English","Baita Aceleradora",3],["Friendly English","Campinas Tech",4],
+  ["Friendly English","Consultora Stella G.",5],["Friendly English","FEAC",3],["Friendly English","Inova Unicamp",3],
+  ["Friendly English","SEBRAE",3],["Friendly English","SENAI",3],["Friendly English","SMDETI Prefeitura",3],
+  ["Friendly English","Venture Hub",4],["Friendly English","WorxBase",4],
+  ["Ozipa Criativa","Casa Hacker",5],["Ozipa Criativa","FEAC",5],["Ozipa Criativa","Fundação Educar",3],
+  ["Ozipa Criativa","Guaraípu",3],["Ozipa Criativa","Luciana O. Consultoria",3],["Ozipa Criativa","Venture Hub",3],["Ozipa Criativa","WorxBase",3],
+  ["PUC-Campinas","2.5 Ventures",5],["PUC-Campinas","AAQQ",5],["PUC-Campinas","Casa Hacker",4],
+  ["PUC-Campinas","Consultora Stella G.",4],["PUC-Campinas","FEAC",5],["PUC-Campinas","Fundação Educar",5],
+  ["PUC-Campinas","Fundepag",4],["PUC-Campinas","Guaraípu",4],["PUC-Campinas","IAPRENDI",4],
+  ["PUC-Campinas","Inova Unicamp",4],["PUC-Campinas","NSC Softex",4],["PUC-Campinas","Ozipa Criativa",4],
+  ["PUC-Campinas","SEBRAE",3],["PUC-Campinas","SMDETI Prefeitura",5],["PUC-Campinas","Unicamp",5],
+  ["PUC-Campinas","Venture Hub",3],["PUC-Campinas","WorxBase",5],
+  ["IAPRENDI","Baita Aceleradora",3],["IAPRENDI","Campinas Tech",4],["IAPRENDI","Fundepag",5],
+  ["IAPRENDI","Inova Unicamp",3],["IAPRENDI","PUC-Campinas",5],["IAPRENDI","SEBRAE",4],["IAPRENDI","SENAI",3],["IAPRENDI","Venture Hub",3],
+  ["Yunus Neg. Sociais","Techoá",3],
+  ["Fundepag","Baita Aceleradora",5],["Fundepag","Campinas Tech",4],["Fundepag","Consultora Stella G.",4],
+  ["Fundepag","IAPRENDI",5],["Fundepag","Inova Unicamp",5],["Fundepag","NSC Softex",4],
+  ["Fundepag","PUC-Campinas",4],["Fundepag","SEBRAE",5],["Fundepag","SENAI",5],
+  ["Fundepag","SMDETI Prefeitura",5],["Fundepag","Techoá",4],["Fundepag","Unicamp",4],["Fundepag","Venture Hub",4]
+].map(([s,t,l])=>({source:s,target:t,level:l}));
+
+const wrap=document.getElementById('wrap');
+const W=wrap.offsetWidth||680;
+const H=Math.round(W*0.78);
+wrap.style.height=H+'px';
+
+const svg=d3.select('#wrap').append('svg').attr('width',W).attr('height',H);
+const defs=svg.append('defs');
+const edgeColor=lv=>lv===5?'#0F6E56':lv===4?'#F5A800':'#BBBBBB';
+
+[5,4,3].forEach(lv=>{
+  defs.append('marker').attr('id','arr'+lv)
+    .attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5Z').attr('fill',edgeColor(lv));
+});
+
+const r=d3.scaleSqrt().domain([1,32]).range([7,24]);
+
+const sim=d3.forceSimulation(NODES)
+  .force('link',d3.forceLink(EDGES).id(d=>d.id)
+    .distance(d=>95-((d.source.deg||5)+(d.target.deg||5))*1.0)
+    .strength(0.22))
+  .force('charge',d3.forceManyBody().strength(d=>-150-d.deg*8))
+  .force('center',d3.forceCenter(W/2,H/2))
+  .force('collide',d3.forceCollide(d=>r(d.deg)+20))
+  .force('radial',d3.forceRadial(
+    d=>(1-(d.deg-1)/31)*Math.min(W,H)*0.40,W/2,H/2
+  ).strength(0.55));
+
+const gLinks=svg.append('g');
+const gNodes=svg.append('g');
+const gLabels=svg.append('g');
+
+const lines=gLinks.selectAll('line').data(EDGES).enter().append('line')
+  .attr('stroke',d=>edgeColor(d.level))
+  .attr('stroke-width',d=>d.level===5?1.8:d.level===4?1.3:0.9)
+  .attr('stroke-dasharray',d=>d.level===3?'5,3':null)
+  .attr('stroke-opacity',d=>d.level===5?0.72:d.level===4?0.62:0.45)
+  .attr('marker-end',d=>'url(#arr'+d.level+')');
+
+const circles=gNodes.selectAll('circle').data(NODES).enter().append('circle')
+  .attr('r',d=>r(d.deg))
+  .attr('fill','#1B2A4A')
+  .attr('fill-opacity',d=>0.45+(d.deg/32)*0.45)
+  .attr('stroke','#fff').attr('stroke-width',1.5)
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{if(!e.active)sim.alphaTarget(0.3).restart();d.fx=d.x;d.fy=d.y;})
+    .on('drag',(e,d)=>{d.fx=e.x;d.fy=e.y;})
+    .on('end',(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=null;d.fy=null;})
+  );
+
+const bgRects=gLabels.selectAll('rect').data(NODES).enter().append('rect')
+  .attr('fill','white').attr('fill-opacity',0.88).attr('rx',2);
+
+const texts=gLabels.selectAll('text').data(NODES).enter().append('text')
+  .text(d=>d.id)
+  .attr('font-size',d=>d.deg>=22?11:d.deg>=10?10:9)
+  .attr('font-family','Arial,sans-serif')
+  .attr('font-weight',d=>d.deg>=22?'500':'400')
+  .attr('fill','#1B2A4A')
+  .attr('text-anchor','middle')
+  .attr('pointer-events','none');
+
+function highlight(hid){
+  const conn=new Set([hid]),act=new Set();
+  EDGES.forEach((e,i)=>{
+    const s=e.source.id||e.source,t=e.target.id||e.target;
+    if(s===hid||t===hid){conn.add(s);conn.add(t);act.add(i);}
+  });
+  lines
+    .attr('stroke-opacity',(d,i)=>act.has(i)?(d.level===5?0.9:d.level===4?0.85:0.75):0.04)
+    .attr('stroke-width',(d,i)=>act.has(i)?(d.level===5?2.5:d.level===4?1.8:1.3):0.5);
+  circles
+    .attr('fill-opacity',d=>conn.has(d.id)?(d.id===hid?0.95:0.75):0.07)
+    .attr('stroke',d=>d.id===hid?'#F5A800':'#fff')
+    .attr('stroke-width',d=>d.id===hid?3:1.5);
+  bgRects.attr('fill-opacity',d=>conn.has(d.id)?0.92:0.15);
+  texts.attr('fill',d=>conn.has(d.id)?'#1B2A4A':'#ccc');
+}
+
+function reset(){
+  lines
+    .attr('stroke-opacity',d=>d.level===5?0.72:d.level===4?0.62:0.45)
+    .attr('stroke-width',d=>d.level===5?1.8:d.level===4?1.3:0.9);
+  circles
+    .attr('fill-opacity',d=>0.45+(d.deg/32)*0.45)
+    .attr('stroke','#fff').attr('stroke-width',1.5);
+  bgRects.attr('fill-opacity',0.88);
+  texts.attr('fill','#1B2A4A');
+}
+
+circles.on('mouseover',(_,d)=>highlight(d.id)).on('mouseout',()=>reset());
+
+sim.on('tick',()=>{
+  const pad=36;
+  NODES.forEach(d=>{d.x=Math.max(pad,Math.min(W-pad,d.x));d.y=Math.max(pad,Math.min(H-pad,d.y));});
+  lines
+    .attr('x1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.x+dx/L*R;})
+    .attr('y1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.y+dy/L*R;})
+    .attr('x2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x+dx/L*R;})
+    .attr('y2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y+dy/L*R;});
+  circles.attr('cx',d=>d.x).attr('cy',d=>d.y);
+  texts.attr('x',d=>d.x).attr('y',d=>d.y+r(d.deg)+11);
+  bgRects.each(function(d){
+    const el=texts.filter(n=>n.id===d.id).node();
+    if(!el)return;
+    const b=el.getBBox();
+    d3.select(this).attr('x',b.x-3).attr('y',b.y-1).attr('width',b.width+6).attr('height',b.height+2);
+  });
+});
+</script>
