@@ -1,0 +1,301 @@
+
+<div style="font-family:var(--font-sans);padding:0">
+  <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:11px;color:var(--color-text-secondary)">
+    <span style="font-size:13px;font-weight:500;color:var(--color-text-primary);margin-right:4px">Fortaleza · mapa de conexões 2026</span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#0F6E56" stroke-width="2.5"/><polygon points="22,0 30,4 22,8" fill="#0F6E56"/></svg>Nível 5 · parceria ativa
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#F5A800" stroke-width="2"/><polygon points="22,0 30,4 22,8" fill="#F5A800"/></svg>Nível 4 · conexão pontual
+    </span>
+    <span style="display:flex;align-items:center;gap:5px">
+      <svg width="30" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#AAAAAA" stroke-width="1.5" stroke-dasharray="4,3"/><polygon points="22,0 30,4 22,8" fill="#AAAAAA"/></svg>Nível 3 · parceria passada
+    </span>
+  </div>
+  <div id="wrap" style="width:100%;border:0.5px solid var(--color-border-tertiary);border-radius:12px;background:var(--color-background-primary);overflow:hidden"></div>
+  <p style="font-size:11px;color:var(--color-text-secondary);margin-top:8px;text-align:center">Passe o mouse sobre uma organização para destacar suas conexões · nós são arrastáveis</p>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script>
+const NAME = {
+  "UFC": "UFC",
+  "FIEC": "FIEC",
+  "SECITECE": "SECITECE",
+  "SEBRAE/CE": "SEBRAE/CE",
+  "Somos Um": "Somos Um",
+  "ADECE": "ADECE",
+  "Movimento Saúde Mental/Giardino Buffet": "Mov. Saúde Mental",
+  "Yby Soluções Sustentáveis": "Yby Soluções",
+  "Impact Hub": "Impact Hub",
+  "Universidade de Fortaleza": "Unifor",
+  "Social Brasilis": "Social Brasilis",
+  "Instituto SESI SENAI de Tecnologia": "SESI SENAI Tecnologia",
+  "Empoderar-te": "Empoderar-te",
+  "Cuida Coworking": "Cuida Coworking",
+  "Sinergia Consultoria e Projetos": "Sinergia Consultoria",
+  "S3 Sustentabilidade": "S3 Sustentabilidade",
+  "Banco do Nordeste": "Banco do Nordeste",
+  "Rizoma Social": "Rizoma Social",
+  "Unichristus": "Unichristus",
+  "Casa Azul Ventures": "Casa Azul Ventures",
+  "Positive Company": "Positive Company",
+  "ETICE": "ETICE",
+  "Challenge Experience": "Challenge Experience",
+  "Fundação Dom Cabral": "Fund. Dom Cabral",
+  "Consórcio Nordeste": "Consórcio Nordeste",
+  "Oikos Habitações e Reformas": "Oikos Habitações",
+  "CDL Jovem": "CDL Jovem",
+  "Federação das Empresas Juniores do Estado do Ceará": "FEJEce",
+  "Inneco": "Inneco"
+};
+
+const RAW_NODES = [
+  {id:"UFC",deg:38},{id:"FIEC",deg:33},{id:"SECITECE",deg:32},
+  {id:"SEBRAE/CE",deg:29},{id:"Somos Um",deg:29},{id:"ADECE",deg:26},
+  {id:"Movimento Saúde Mental/Giardino Buffet",deg:26},{id:"Yby Soluções Sustentáveis",deg:23},
+  {id:"Impact Hub",deg:23},{id:"Universidade de Fortaleza",deg:22},{id:"Social Brasilis",deg:21},
+  {id:"Instituto SESI SENAI de Tecnologia",deg:19},{id:"Empoderar-te",deg:19},
+  {id:"Cuida Coworking",deg:15},{id:"Sinergia Consultoria e Projetos",deg:14},
+  {id:"S3 Sustentabilidade",deg:13},{id:"Banco do Nordeste",deg:11},
+  {id:"Rizoma Social",deg:10},{id:"Unichristus",deg:8},{id:"Casa Azul Ventures",deg:7},
+  {id:"Positive Company",deg:6},{id:"ETICE",deg:5},{id:"Challenge Experience",deg:4},
+  {id:"Fundação Dom Cabral",deg:4},{id:"Consórcio Nordeste",deg:3},
+  {id:"Oikos Habitações e Reformas",deg:3},{id:"CDL Jovem",deg:3},
+  {id:"Federação das Empresas Juniores do Estado do Ceará",deg:3},{id:"Inneco",deg:1}
+];
+
+const RAW_EDGES = [
+  ["S3 Sustentabilidade","ADECE",4],["S3 Sustentabilidade","Banco do Nordeste",4],
+  ["S3 Sustentabilidade","Casa Azul Ventures",5],["S3 Sustentabilidade","Consórcio Nordeste",4],
+  ["S3 Sustentabilidade","FIEC",4],["S3 Sustentabilidade","Instituto SESI SENAI de Tecnologia",5],
+  ["S3 Sustentabilidade","Movimento Saúde Mental/Giardino Buffet",3],["S3 Sustentabilidade","SEBRAE/CE",3],
+  ["S3 Sustentabilidade","SECITECE",4],["S3 Sustentabilidade","UFC",5],
+  ["S3 Sustentabilidade","Universidade de Fortaleza",5],["S3 Sustentabilidade","Yby Soluções Sustentáveis",5],
+  ["Social Brasilis","Challenge Experience",3],["Social Brasilis","Empoderar-te",3],
+  ["Social Brasilis","Fundação Dom Cabral",3],["Social Brasilis","Movimento Saúde Mental/Giardino Buffet",4],
+  ["Social Brasilis","Positive Company",3],["Social Brasilis","Rizoma Social",3],
+  ["Social Brasilis","SECITECE",4],["Social Brasilis","Somos Um",5],["Social Brasilis","UFC",4],
+  ["Social Brasilis","Unichristus",3],
+  ["Impact Hub","ADECE",5],["Impact Hub","Banco do Nordeste",4],["Impact Hub","Empoderar-te",3],
+  ["Impact Hub","FIEC",5],["Impact Hub","Movimento Saúde Mental/Giardino Buffet",5],
+  ["Impact Hub","Oikos Habitações e Reformas",3],["Impact Hub","SEBRAE/CE",5],
+  ["Impact Hub","SECITECE",4],["Impact Hub","Sinergia Consultoria e Projetos",5],
+  ["Impact Hub","Somos Um",3],["Impact Hub","UFC",4],["Impact Hub","Universidade de Fortaleza",5],
+  ["Instituto SESI SENAI de Tecnologia","ADECE",3],["Instituto SESI SENAI de Tecnologia","Banco do Nordeste",5],
+  ["Instituto SESI SENAI de Tecnologia","Casa Azul Ventures",4],["Instituto SESI SENAI de Tecnologia","Cuida Coworking",4],
+  ["Instituto SESI SENAI de Tecnologia","ETICE",3],["Instituto SESI SENAI de Tecnologia","FIEC",5],
+  ["Instituto SESI SENAI de Tecnologia","SEBRAE/CE",5],["Instituto SESI SENAI de Tecnologia","SECITECE",4],
+  ["Instituto SESI SENAI de Tecnologia","UFC",5],["Instituto SESI SENAI de Tecnologia","Unichristus",4],
+  ["Instituto SESI SENAI de Tecnologia","Universidade de Fortaleza",5],
+  ["Universidade de Fortaleza","ADECE",5],["Universidade de Fortaleza","FIEC",3],
+  ["Universidade de Fortaleza","Impact Hub",3],["Universidade de Fortaleza","Movimento Saúde Mental/Giardino Buffet",3],
+  ["Universidade de Fortaleza","SEBRAE/CE",3],["Universidade de Fortaleza","SECITECE",3],
+  ["Universidade de Fortaleza","Social Brasilis",3],["Universidade de Fortaleza","Somos Um",3],
+  ["Universidade de Fortaleza","UFC",4],
+  ["Movimento Saúde Mental/Giardino Buffet","Banco do Nordeste",3],
+  ["Movimento Saúde Mental/Giardino Buffet","CDL Jovem",3],
+  ["Movimento Saúde Mental/Giardino Buffet","Empoderar-te",4],
+  ["Movimento Saúde Mental/Giardino Buffet","FIEC",3],
+  ["Movimento Saúde Mental/Giardino Buffet","Impact Hub",5],
+  ["Movimento Saúde Mental/Giardino Buffet","Rizoma Social",3],
+  ["Movimento Saúde Mental/Giardino Buffet","SEBRAE/CE",3],
+  ["Movimento Saúde Mental/Giardino Buffet","Social Brasilis",4],
+  ["Movimento Saúde Mental/Giardino Buffet","Somos Um",5],
+  ["Movimento Saúde Mental/Giardino Buffet","UFC",5],
+  ["Movimento Saúde Mental/Giardino Buffet","Unichristus",3],
+  ["Movimento Saúde Mental/Giardino Buffet","Universidade de Fortaleza",3],
+  ["Movimento Saúde Mental/Giardino Buffet","Yby Soluções Sustentáveis",3],
+  ["Sinergia Consultoria e Projetos","ADECE",5],["Sinergia Consultoria e Projetos","Banco do Nordeste",5],
+  ["Sinergia Consultoria e Projetos","Empoderar-te",3],["Sinergia Consultoria e Projetos","FIEC",5],
+  ["Sinergia Consultoria e Projetos","Impact Hub",5],["Sinergia Consultoria e Projetos","Instituto SESI SENAI de Tecnologia",4],
+  ["Sinergia Consultoria e Projetos","Movimento Saúde Mental/Giardino Buffet",4],
+  ["Sinergia Consultoria e Projetos","Rizoma Social",4],["Sinergia Consultoria e Projetos","SEBRAE/CE",5],
+  ["Sinergia Consultoria e Projetos","SECITECE",3],["Sinergia Consultoria e Projetos","UFC",3],
+  ["Sinergia Consultoria e Projetos","Universidade de Fortaleza",3],
+  ["Cuida Coworking","Banco do Nordeste",4],["Cuida Coworking","Casa Azul Ventures",4],
+  ["Cuida Coworking","Challenge Experience",5],["Cuida Coworking","Empoderar-te",4],
+  ["Cuida Coworking","Instituto SESI SENAI de Tecnologia",4],["Cuida Coworking","Movimento Saúde Mental/Giardino Buffet",4],
+  ["Cuida Coworking","SEBRAE/CE",3],["Cuida Coworking","SECITECE",5],
+  ["Cuida Coworking","Social Brasilis",4],["Cuida Coworking","Somos Um",4],
+  ["Cuida Coworking","UFC",4],["Cuida Coworking","Universidade de Fortaleza",5],
+  ["Somos Um","ADECE",4],["Somos Um","Banco do Nordeste",4],["Somos Um","Casa Azul Ventures",4],
+  ["Somos Um","CDL Jovem",4],["Somos Um","Empoderar-te",3],["Somos Um","FIEC",4],
+  ["Somos Um","Fundação Dom Cabral",5],["Somos Um","Impact Hub",5],
+  ["Somos Um","Movimento Saúde Mental/Giardino Buffet",5],["Somos Um","Oikos Habitações e Reformas",3],
+  ["Somos Um","Rizoma Social",3],["Somos Um","SEBRAE/CE",5],["Somos Um","SECITECE",4],
+  ["Somos Um","Social Brasilis",5],["Somos Um","UFC",4],["Somos Um","Universidade de Fortaleza",3],
+  ["Somos Um","Yby Soluções Sustentáveis",4],
+  ["UFC","ADECE",4],["UFC","Banco do Nordeste",4],["UFC","Casa Azul Ventures",4],
+  ["UFC","Challenge Experience",4],["UFC","Cuida Coworking",4],["UFC","Empoderar-te",5],
+  ["UFC","ETICE",4],["UFC","Federação das Empresas Juniores do Estado do Ceará",5],
+  ["UFC","FIEC",4],["UFC","Impact Hub",5],["UFC","Inneco",3],
+  ["UFC","Instituto SESI SENAI de Tecnologia",4],["UFC","Movimento Saúde Mental/Giardino Buffet",4],
+  ["UFC","Positive Company",5],["UFC","Rizoma Social",5],["UFC","SEBRAE/CE",5],
+  ["UFC","SECITECE",5],["UFC","Social Brasilis",4],["UFC","Somos Um",4],
+  ["UFC","Unichristus",5],["UFC","Universidade de Fortaleza",4],["UFC","Yby Soluções Sustentáveis",5],
+  ["SECITECE","ADECE",5],["SECITECE","Casa Azul Ventures",5],["SECITECE","Challenge Experience",3],
+  ["SECITECE","Cuida Coworking",5],["SECITECE","Empoderar-te",4],["SECITECE","ETICE",5],
+  ["SECITECE","FIEC",4],["SECITECE","Impact Hub",5],["SECITECE","Instituto SESI SENAI de Tecnologia",3],
+  ["SECITECE","Movimento Saúde Mental/Giardino Buffet",4],["SECITECE","Rizoma Social",4],
+  ["SECITECE","SEBRAE/CE",5],["SECITECE","Social Brasilis",3],["SECITECE","Somos Um",5],
+  ["SECITECE","UFC",5],["SECITECE","Unichristus",3],["SECITECE","Universidade de Fortaleza",3],
+  ["SECITECE","Yby Soluções Sustentáveis",4],
+  ["SEBRAE/CE","ADECE",5],["SEBRAE/CE","Banco do Nordeste",5],["SEBRAE/CE","CDL Jovem",5],
+  ["SEBRAE/CE","Consórcio Nordeste",4],["SEBRAE/CE","ETICE",4],
+  ["SEBRAE/CE","Federação das Empresas Juniores do Estado do Ceará",4],
+  ["SEBRAE/CE","FIEC",5],["SEBRAE/CE","Fundação Dom Cabral",4],["SEBRAE/CE","Impact Hub",4],
+  ["SEBRAE/CE","Instituto SESI SENAI de Tecnologia",5],["SEBRAE/CE","SECITECE",5],
+  ["SEBRAE/CE","Somos Um",4],["SEBRAE/CE","UFC",5],["SEBRAE/CE","Unichristus",4],
+  ["SEBRAE/CE","Universidade de Fortaleza",4],["SEBRAE/CE","Yby Soluções Sustentáveis",4],
+  ["FIEC","ADECE",5],["FIEC","Banco do Nordeste",4],["FIEC","Casa Azul Ventures",4],
+  ["FIEC","Consórcio Nordeste",4],["FIEC","Empoderar-te",5],["FIEC","ETICE",4],
+  ["FIEC","Federação das Empresas Juniores do Estado do Ceará",3],["FIEC","Impact Hub",5],
+  ["FIEC","Movimento Saúde Mental/Giardino Buffet",4],["FIEC","Rizoma Social",4],
+  ["FIEC","S3 Sustentabilidade",4],["FIEC","SEBRAE/CE",5],["FIEC","SECITECE",4],
+  ["FIEC","Sinergia Consultoria e Projetos",5],["FIEC","Social Brasilis",4],["FIEC","Somos Um",4],
+  ["FIEC","UFC",5],["FIEC","Unichristus",4],["FIEC","Universidade de Fortaleza",4],
+  ["FIEC","Yby Soluções Sustentáveis",5],
+  ["Yby Soluções Sustentáveis","ADECE",4],["Yby Soluções Sustentáveis","Banco do Nordeste",4],
+  ["Yby Soluções Sustentáveis","Empoderar-te",4],["Yby Soluções Sustentáveis","FIEC",5],
+  ["Yby Soluções Sustentáveis","Impact Hub",4],["Yby Soluções Sustentáveis","Instituto SESI SENAI de Tecnologia",4],
+  ["Yby Soluções Sustentáveis","Movimento Saúde Mental/Giardino Buffet",4],
+  ["Yby Soluções Sustentáveis","Positive Company",4],["Yby Soluções Sustentáveis","Rizoma Social",4],
+  ["Yby Soluções Sustentáveis","SEBRAE/CE",5],["Yby Soluções Sustentáveis","SECITECE",4],
+  ["Yby Soluções Sustentáveis","Social Brasilis",4],["Yby Soluções Sustentáveis","Somos Um",5],
+  ["Yby Soluções Sustentáveis","UFC",4],["Yby Soluções Sustentáveis","Universidade de Fortaleza",5],
+  ["ADECE","Empoderar-te",4],["ADECE","FIEC",3],["ADECE","Impact Hub",5],
+  ["ADECE","Instituto SESI SENAI de Tecnologia",4],["ADECE","Movimento Saúde Mental/Giardino Buffet",4],
+  ["ADECE","Oikos Habitações e Reformas",4],["ADECE","Rizoma Social",3],["ADECE","SEBRAE/CE",4],
+  ["ADECE","SECITECE",5],["ADECE","Social Brasilis",4],["ADECE","Somos Um",4],
+  ["ADECE","UFC",4],["ADECE","Unichristus",4],["ADECE","Universidade de Fortaleza",4],
+  ["ADECE","Yby Soluções Sustentáveis",4],
+  ["Positive Company","Impact Hub",3],["Positive Company","Social Brasilis",3],["Positive Company","UFC",3],
+  ["Empoderar-te","FIEC",5],["Empoderar-te","Fundação Dom Cabral",5],
+  ["Empoderar-te","Movimento Saúde Mental/Giardino Buffet",5],["Empoderar-te","Rizoma Social",3],
+  ["Empoderar-te","SECITECE",4],["Empoderar-te","Social Brasilis",3],
+  ["Empoderar-te","Somos Um",3],["Empoderar-te","UFC",5]
+];
+
+const NODES = RAW_NODES.map(n => ({...n, label: NAME[n.id] || n.id}));
+const EDGES = RAW_EDGES.map(([s,t,l]) => ({source:s, target:t, level:l}));
+
+const wrap = document.getElementById('wrap');
+const W = wrap.offsetWidth || 680;
+const H = Math.round(W * 0.78);
+wrap.style.height = H + 'px';
+
+const svg = d3.select('#wrap').append('svg').attr('width',W).attr('height',H);
+const defs = svg.append('defs');
+const edgeColor = lv => lv===5 ? '#0F6E56' : lv===4 ? '#F5A800' : '#BBBBBB';
+
+[5,4,3].forEach(lv => {
+  defs.append('marker').attr('id','arr'+lv)
+    .attr('viewBox','0 -5 10 10').attr('refX',9).attr('refY',0)
+    .attr('markerWidth',6).attr('markerHeight',6).attr('orient','auto')
+    .append('path').attr('d','M0,-5L10,0L0,5Z').attr('fill',edgeColor(lv));
+});
+
+const r = d3.scaleSqrt().domain([1,38]).range([6,24]);
+
+const radialR = d => {
+  const norm = (d.deg - 1) / 37;
+  const maxR = Math.min(W,H) * 0.36;
+  const minR = Math.min(W,H) * 0.10;
+  return minR + (1 - norm) * (maxR - minR);
+};
+
+const sim = d3.forceSimulation(NODES)
+  .force('link', d3.forceLink(EDGES).id(d=>d.id)
+    .distance(d => 90 - ((d.source.deg||5)+(d.target.deg||5))*0.9)
+    .strength(0.2))
+  .force('charge', d3.forceManyBody().strength(d => -140 - d.deg*7))
+  .force('center', d3.forceCenter(W/2, H/2))
+  .force('collide', d3.forceCollide(d => r(d.deg)+18))
+  .force('radial', d3.forceRadial(radialR, W/2, H/2).strength(0.65));
+
+const gLinks  = svg.append('g');
+const gNodes  = svg.append('g');
+const gLabels = svg.append('g');
+
+const lines = gLinks.selectAll('line').data(EDGES).enter().append('line')
+  .attr('stroke', d => edgeColor(d.level))
+  .attr('stroke-width', d => d.level===5 ? 1.8 : d.level===4 ? 1.3 : 0.9)
+  .attr('stroke-dasharray', d => d.level===3 ? '5,3' : null)
+  .attr('stroke-opacity', d => d.level===5 ? 0.72 : d.level===4 ? 0.62 : 0.45)
+  .attr('marker-end', d => 'url(#arr'+d.level+')');
+
+const circles = gNodes.selectAll('circle').data(NODES).enter().append('circle')
+  .attr('r', d => r(d.deg))
+  .attr('fill','#1B2A4A')
+  .attr('fill-opacity', d => 0.45+(d.deg/38)*0.45)
+  .attr('stroke','#fff').attr('stroke-width',1.5)
+  .style('cursor','pointer')
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag', (e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',  (e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; })
+  );
+
+const bgRects = gLabels.selectAll('rect').data(NODES).enter().append('rect')
+  .attr('fill','white').attr('fill-opacity',0.88).attr('rx',2);
+
+const texts = gLabels.selectAll('text').data(NODES).enter().append('text')
+  .text(d => d.label)
+  .attr('font-size', d => d.deg>=26 ? 11 : d.deg>=12 ? 10 : 9)
+  .attr('font-family','Arial,sans-serif')
+  .attr('font-weight', d => d.deg>=26 ? '500' : '400')
+  .attr('fill','#1B2A4A')
+  .attr('text-anchor','middle')
+  .attr('pointer-events','none');
+
+function highlight(hid) {
+  const conn = new Set([hid]), act = new Set();
+  EDGES.forEach((e,i) => {
+    const s = e.source.id||e.source, t = e.target.id||e.target;
+    if(s===hid||t===hid){ conn.add(s); conn.add(t); act.add(i); }
+  });
+  lines
+    .attr('stroke-opacity',(d,i) => act.has(i) ? (d.level===5?0.9:d.level===4?0.85:0.75) : 0.04)
+    .attr('stroke-width',  (d,i) => act.has(i) ? (d.level===5?2.5:d.level===4?1.8:1.3)   : 0.5);
+  circles
+    .attr('fill-opacity', d => conn.has(d.id) ? (d.id===hid?0.95:0.75) : 0.07)
+    .attr('stroke',       d => d.id===hid ? '#F5A800' : '#fff')
+    .attr('stroke-width', d => d.id===hid ? 3 : 1.5);
+  bgRects.attr('fill-opacity', d => conn.has(d.id) ? 0.92 : 0.15);
+  texts.attr('fill', d => conn.has(d.id) ? '#1B2A4A' : '#ccc');
+}
+
+function reset() {
+  lines
+    .attr('stroke-opacity', d => d.level===5?0.72:d.level===4?0.62:0.45)
+    .attr('stroke-width',   d => d.level===5?1.8:d.level===4?1.3:0.9);
+  circles
+    .attr('fill-opacity', d => 0.45+(d.deg/38)*0.45)
+    .attr('stroke','#fff').attr('stroke-width',1.5);
+  bgRects.attr('fill-opacity',0.88);
+  texts.attr('fill','#1B2A4A');
+}
+
+circles.on('mouseover',(_,d) => highlight(d.id)).on('mouseout',() => reset());
+
+sim.on('tick', () => {
+  const pad = 36;
+  NODES.forEach(d => {
+    d.x = Math.max(pad, Math.min(W-pad, d.x));
+    d.y = Math.max(pad, Math.min(H-pad, d.y));
+  });
+  lines
+    .attr('x1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.x+dx/L*R;})
+    .attr('y1',d=>{const R=r(d.source.deg),dx=d.target.x-d.source.x,dy=d.target.y-d.source.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.source.y+dy/L*R;})
+    .attr('x2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.x+dx/L*R;})
+    .attr('y2',d=>{const R=r(d.target.deg)+7,dx=d.source.x-d.target.x,dy=d.source.y-d.target.y,L=Math.sqrt(dx*dx+dy*dy)||1;return d.target.y+dy/L*R;});
+  circles.attr('cx',d=>d.x).attr('cy',d=>d.y);
+  texts.attr('x',d=>d.x).attr('y',d=>d.y+r(d.deg)+11);
+  bgRects.each(function(d){
+    const el = texts.filter(n=>n.id===d.id).node();
+    if(!el) return;
+    const b = el.getBBox();
+    d3.select(this).attr('x',b.x-3).attr('y',b.y-1).attr('width',b.width+6).attr('height',b.height+2);
+  });
+});
+</script>
